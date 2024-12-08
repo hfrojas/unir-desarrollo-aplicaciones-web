@@ -8,11 +8,11 @@
 		<version>3.4.0</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>com.sistema.peajes.rutas</groupId>
-	<artifactId>servicio-gestion-rutas</artifactId>
+	<groupId>com.sistema.peajes.ciudades</groupId>
+	<artifactId>servicio-gestion-ciudades</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>servicio-gestion-rutas</name>
-	<description>Microservicio de gestión de rutas</description>
+	<name>servicio-gestion-ciudades</name>
+	<description>Microservicio de gestión de ciudades</description>
 	<url/>
 	<licenses>
 		<license/>
@@ -81,10 +81,6 @@
 			<version>2.7.0</version>
 		</dependency>
 
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-webflux</artifactId>
-		</dependency>
 
 	</dependencies>
 

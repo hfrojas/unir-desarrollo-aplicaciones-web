@@ -1,4 +1,4 @@
-package com.sistema.peajes.rutas.servicio.gestion.rutas.entity;
+package com.sistema.peajes.rutas.servicio.gestion.ciudades.entity;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@Table(name = "ciudades")
+@Table(name = "ciudad")
 public class CiudadEntity {
 
     @Id
