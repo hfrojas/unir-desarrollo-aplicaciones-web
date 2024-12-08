@@ -1,10 +1,17 @@
 package com.sistema.peajes.rutas.servicio.gestion.ciudades.service;
 
+import com.sistema.peajes.rutas.servicio.gestion.ciudades.dto.Ruta;
 import com.sistema.peajes.rutas.servicio.gestion.ciudades.entity.CiudadEntity;
 import com.sistema.peajes.rutas.servicio.gestion.ciudades.repository.CiudadRepository;
+import com.sistema.peajes.rutas.servicio.gestion.ciudades.utils.RutaClient;
+import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+import reactor.core.publisher.Mono;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
@@ -14,18 +21,12 @@ import java.util.stream.Collectors;
  * The type Ciudad service.
  */
 @Service
+@RequiredArgsConstructor
 public class CiudadService {
 
     private final CiudadRepository ciudadRepository;
 
-    /**
-     * Instantiates a new Ciudad service.
-     *
-     * @param ciudadRepository the ciudad repository
-     */
-    public CiudadService(CiudadRepository ciudadRepository) {
-        this.ciudadRepository = ciudadRepository;
-    }
+    private final RutaClient rutaClient;
 
     /**
      * Crear ciudad ciudad.
@@ -117,6 +118,25 @@ public class CiudadService {
      */
     public boolean existeCiudadPorId(Long ciudadId) {
         return ciudadRepository.existsById(ciudadId);
+    }
+
+    public List<Ruta> obtenerRutasPorCiudad(Long ciudadId) {
+
+        if (!ciudadRepository.existsById(ciudadId)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "La ciudad con ID " + ciudadId + " no existe.");
+        }
+
+        Mono<List<Ruta>> rutasOrigen = rutaClient.buscarRutasPorOrigen(ciudadId);
+        Mono<List<Ruta>> rutasDestino = rutaClient.buscarRutasPorDestino(ciudadId);
+
+        return Mono.zip(rutasOrigen, rutasDestino)
+                .map(tuple -> {
+                    List<Ruta> rutas = new ArrayList<>();
+                    rutas.addAll(tuple.getT1());
+                    rutas.addAll(tuple.getT2());
+                    return rutas;
+                })
+                .block(); // Bloqueamos para obtener el resultado final en modo sincrónico
     }
 
 }

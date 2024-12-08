@@ -1,5 +1,6 @@
 package com.sistema.peajes.rutas.servicio.gestion.ciudades.web;
 
+import com.sistema.peajes.rutas.servicio.gestion.ciudades.dto.Ruta;
 import com.sistema.peajes.rutas.servicio.gestion.ciudades.entity.CiudadEntity;
 import com.sistema.peajes.rutas.servicio.gestion.ciudades.service.CiudadService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -176,6 +177,22 @@ public class CiudadController {
         }
         boolean existe = ciudadService.existeCiudadPorId(ciudadId);
         return ResponseEntity.ok(existe);
+    }
+
+    @GetMapping("/{id}/rutas")
+    @Operation(
+            summary = "Consultar rutas relacionadas con una ciudad",
+            description = "Consulta las rutas de las cuales esta ciudad es un origen o destino.",
+            operationId = "consultarRutasPorCiudad",
+            tags = {"Consulta de Ciudades"}
+    )
+    public ResponseEntity<List<Ruta>> consultarRutasPorCiudad(@PathVariable Long id) {
+        if (id == null || id <= 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El ID de la ciudad es obligatorio y debe ser un número positivo.");
+        }
+
+        List<Ruta> rutas = ciudadService.obtenerRutasPorCiudad(id);
+        return ResponseEntity.ok(rutas);
     }
 
 }
