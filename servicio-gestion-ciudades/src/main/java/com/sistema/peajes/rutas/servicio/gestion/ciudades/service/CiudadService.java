@@ -34,12 +34,14 @@ public class CiudadService {
      * @return the ciudad
      */
     public CiudadEntity crearCiudad(CiudadEntity ciudad) {
-        CiudadEntity ciudadEntity = new CiudadEntity();
-        ciudadEntity.setId(ciudad.getId());
-        ciudadEntity.setNombre(ciudad.getNombre());
+
+        Long maxId = ciudadRepository.findMaxId();
+        Long nuevoId = (maxId != null) ? maxId + 1 : 1L;
+
+        ciudad.setId(nuevoId);
 
         try {
-            CiudadEntity nuevaCiudad = ciudadRepository.save(ciudadEntity);
+            CiudadEntity nuevaCiudad = ciudadRepository.save(ciudad);
             return new CiudadEntity(nuevaCiudad.getId(), nuevaCiudad.getNombre());
         } catch (DataIntegrityViolationException ex) {
             throw new DataIntegrityViolationException("El nombre de la ciudad ya existe: " + ciudad.getNombre());
@@ -84,19 +86,15 @@ public class CiudadService {
      * Actualizar ciudad ciudad entity.
      *
      * @param id          the id
-     * @param nuevaCiudad the nueva ciudad
+     * @param nuevoNombre the nueva ciudad
      * @return the ciudad entity
      */
-    public CiudadEntity actualizarCiudad(Long id, CiudadEntity nuevaCiudad) {
-        Optional<CiudadEntity> ciudadExistente = ciudadRepository.findById(id);
+    public CiudadEntity actualizarCiudad(Long id, String nuevoNombre) {
+        CiudadEntity ciudadExistente = ciudadRepository.findById(id)
+                .orElseThrow(()-> new IllegalArgumentException("La ciudad con ID " + id + " no existe."));
 
-        if (ciudadExistente.isEmpty()) {
-            throw new IllegalArgumentException("La ciudad con ID " + id + " no existe");
-        }
-
-        CiudadEntity ciudad = ciudadExistente.get();
-        ciudad.setNombre(nuevaCiudad.getNombre());
-        return ciudadRepository.save(ciudad);
+        ciudadExistente.setNombre(nuevoNombre);
+        return ciudadRepository.save(ciudadExistente);
     }
 
     /**

@@ -11,9 +11,11 @@ import java.util.List;
 @Repository
 public interface CiudadRepository extends JpaRepository<CiudadEntity, Long> {
 
-    @Query(value = "SELECT * FROM gestion_rutas.ciudad WHERE nombre LIKE %?1%", nativeQuery = true)
+    @Query(value = "SELECT * FROM ciudad WHERE nombre LIKE %?1%", nativeQuery = true)
     List<CiudadEntity> findByNameLike(String nombre);
 
     boolean existsById(Long id);
 
+    @Query(value = "SELECT MAX(id) FROM ciudad", nativeQuery = true)
+    Long findMaxId();
 }

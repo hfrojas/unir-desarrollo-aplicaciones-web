@@ -3,8 +3,8 @@ package com.sistema.peajes.rutas.servicio.gestion.rutas.web;
 import com.sistema.peajes.rutas.servicio.gestion.rutas.dto.Ruta;
 import com.sistema.peajes.rutas.servicio.gestion.rutas.entity.RutaEntity;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.AllArgsConstructor;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
@@ -31,8 +31,12 @@ public class RutaController {
     )
     public ResponseEntity<RutaEntity> crearRuta(@RequestBody Ruta ruta) {
 
-        if (ruta.getNombre() == null || ruta.getNombre().isEmpty()) {
+        if (StringUtils.isBlank(ruta.getNombre())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El nombre de la ruta es obligatorio.");
+        }
+
+        if (!StringUtils.isAlphanumericSpace(ruta.getNombre())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El nombre de la ruta debe ser alfanumérico y puede contener espacios.");
         }
 
         if (ruta.getCiudadOrigenId() == null) {
@@ -94,12 +98,16 @@ public class RutaController {
     )
     public ResponseEntity<RutaEntity> actualizarRuta(@PathVariable Long id, @RequestBody Ruta ruta) {
 
-        if (id == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El ID de la ruta es obligatorio.");
+        if (id == null || id <= 0) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El ID de la ruta es obligatorio y debe ser un número positivo.");
         }
 
-        if (ruta.getNombre() == null || ruta.getNombre().isBlank()) {
+        if (StringUtils.isBlank(ruta.getNombre())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El nombre de la ruta es obligatorio.");
+        }
+
+        if (!StringUtils.isAlphanumericSpace(ruta.getNombre())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "El nombre de la ruta debe ser alfanumérico y puede contener espacios.");
         }
 
         if (ruta.getCiudadOrigenId() == null) {
