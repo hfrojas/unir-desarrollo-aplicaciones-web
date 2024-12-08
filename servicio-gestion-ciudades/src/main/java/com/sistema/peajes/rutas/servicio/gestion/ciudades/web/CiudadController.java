@@ -104,4 +104,20 @@ public class CiudadController {
         return ResponseEntity.noContent().build();
     }
 
+    /**
+     * Verifica si una ciudad existe por su ID.
+     *
+     * @param ciudadId ID de la ciudad a verificar.
+     * @return ResponseEntity con el resultado de la verificación.
+     */
+    @GetMapping("/{ciudadId}/existe")
+    @Operation(summary = "Verificar si una ciudad existe", description = "Devuelve true si una ciudad existe con el ID proporcionado, false de lo contrario.")
+    public ResponseEntity<Boolean> existeCiudad(@PathVariable Long ciudadId) {
+        if (ciudadId == null) {
+            return ResponseEntity.badRequest().body(false);
+        }
+        boolean existe = ciudadService.existeCiudadPorId(ciudadId);
+        return ResponseEntity.ok(existe);
+    }
+
 }

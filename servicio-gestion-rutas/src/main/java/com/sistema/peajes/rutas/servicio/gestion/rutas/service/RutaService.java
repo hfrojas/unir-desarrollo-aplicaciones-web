@@ -1,11 +1,14 @@
 package com.sistema.peajes.rutas.servicio.gestion.rutas.service;
 
+import com.sistema.peajes.rutas.servicio.gestion.rutas.dto.Ruta;
 import com.sistema.peajes.rutas.servicio.gestion.rutas.entity.RutaEntity;
 import com.sistema.peajes.rutas.servicio.gestion.rutas.repository.RutaRepository;
 import com.sistema.peajes.rutas.servicio.gestion.rutas.util.CiudadClient;
 import lombok.AllArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -31,18 +34,35 @@ public class RutaService {
      */
     public RutaEntity crearRuta(RutaEntity ruta) {
 
+        boolean ciudadOrigenExiste = ciudadClient.ciudadExiste(ruta.getCiudadOrigenId())
+                .onErrorReturn(false)
+                .block();
+
+        if (!ciudadOrigenExiste) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La ciudad de origen con ID " + ruta.getCiudadOrigenId() + " no existe.");
+        }
+
+        boolean ciudadDestinoExiste = ciudadClient.ciudadExiste(ruta.getCiudadDestinoId())
+                .onErrorReturn(false)
+                .block();
+
+        if (!ciudadDestinoExiste) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La ciudad de destino con ID " + ruta.getCiudadDestinoId() + " no existe.");
+        }
+
         Long maxId = rutaRepository.findMaxId();
         Long nuevoId = (maxId == null) ? 1L : maxId + 1;
         ruta.setId(nuevoId);
 
+
         try {
             RutaEntity rutaGuardada = rutaRepository.save(ruta);
 
-            String ciudadOrigen = ciudadClient.obtenerNombreCiudad(rutaGuardada.getCiudadOrigenId())
+            String ciudadOrigen = ciudadClient.obtenerNombreCiudad(ruta.getCiudadOrigenId())
                     .onErrorReturn("Ciudad Origen Desconocida")
                     .block();
 
-            String ciudadDestino = ciudadClient.obtenerNombreCiudad(rutaGuardada.getCiudadDestinoId())
+            String ciudadDestino = ciudadClient.obtenerNombreCiudad(ruta.getCiudadDestinoId())
                     .onErrorReturn("Ciudad Destino Desconocida")
                     .block();
 
@@ -170,18 +190,41 @@ public class RutaService {
      * @param nuevaRuta the nueva ruta
      * @return the ruta entity
      */
-    public RutaEntity actualizarRuta(Long id, RutaEntity nuevaRuta) {
-        Optional<RutaEntity> rutaExistente = rutaRepository.findById(id);
+    public RutaEntity actualizarRuta(Long id, Ruta nuevaRuta) {
 
-        if (rutaExistente.isEmpty()) {
-            throw new IllegalArgumentException("La ruta con ID " + id + " no existe");
+        boolean ciudadOrigenExiste = ciudadClient.ciudadExiste(nuevaRuta.getCiudadOrigenId()).block();
+
+        if (!ciudadOrigenExiste) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La ciudad de origen no existe: " + nuevaRuta.getCiudadOrigenId());
         }
 
-        RutaEntity ruta = rutaExistente.get();
-        ruta.setNombre(nuevaRuta.getNombre());
-        ruta.setCiudadOrigenId(nuevaRuta.getCiudadOrigenId());
-        ruta.setCiudadDestinoId(nuevaRuta.getCiudadDestinoId());
-        return rutaRepository.save(ruta);
+        boolean ciudadDestinoExiste = ciudadClient.ciudadExiste(nuevaRuta.getCiudadDestinoId()).block();
+
+        if (!ciudadDestinoExiste) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "La ciudad de destino no existe: " + nuevaRuta.getCiudadDestinoId());
+        }
+
+        RutaEntity rutaExistente = rutaRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "No se encontró una ruta con el ID: " + id));
+
+        rutaExistente.setNombre(nuevaRuta.getNombre());
+        rutaExistente.setCiudadOrigenId(nuevaRuta.getCiudadOrigenId());
+        rutaExistente.setCiudadDestinoId(nuevaRuta.getCiudadDestinoId());
+        rutaExistente.setDistancia(nuevaRuta.getDistancia());
+        rutaRepository.save(rutaExistente);
+
+        String ciudadOrigen = ciudadClient.obtenerNombreCiudad(nuevaRuta.getCiudadOrigenId())
+                .onErrorReturn("Ciudad Origen Desconocida")
+                .block();
+
+        String ciudadDestino = ciudadClient.obtenerNombreCiudad(nuevaRuta.getCiudadDestinoId())
+                .onErrorReturn("Ciudad Destino Desconocida")
+                .block();
+
+        rutaExistente.setCiudadOrigenNombre(ciudadOrigen);
+        rutaExistente.setCiudadDestinoNombre(ciudadDestino);
+
+        return rutaExistente;
     }
 
     /**

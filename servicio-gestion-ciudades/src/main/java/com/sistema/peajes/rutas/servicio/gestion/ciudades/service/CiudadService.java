@@ -111,4 +111,14 @@ public class CiudadService {
         ciudadRepository.deleteById(id);
     }
 
+    /**
+     * Existe ciudad por id boolean.
+     *
+     * @param ciudadId the ciudad id
+     * @return the boolean
+     */
+    public boolean existeCiudadPorId(Long ciudadId) {
+        return ciudadRepository.existsById(ciudadId);
+    }
+
 }

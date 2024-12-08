@@ -12,5 +12,6 @@ public class Ruta {
     private String nombre;
     private Long ciudadOrigenId;
     private Long ciudadDestinoId;
+    private Double distancia;
 
 }
