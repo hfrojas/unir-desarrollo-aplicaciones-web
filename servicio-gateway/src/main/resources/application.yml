@@ -1,0 +1,21 @@
+spring:
+  cloud:
+    gateway:
+      routes:
+        - id: gestion-rutas
+          uri: lb://SERVICIO-GESTION-RUTAS
+          predicates:
+            - Path=/rutas/**
+          filters:
+            - RewritePath=/rutas/(?<segment>.*), /${segment}
+
+        - id: gestion-ciudades
+          uri: lb://SERVICIO-GESTION-CIUDADES
+          predicates:
+            - Path=/ciudades/**
+          filters:
+            - RewritePath=/ciudades/(?<segment>.*), /${segment}
+
+
+
+
